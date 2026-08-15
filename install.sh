@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if ! python3 -c 'import gi; gi.require_foreign("cairo")' >/dev/null 2>&1; then
+    echo "Missing GTK Cairo adapter. Install it first:" >&2
+    echo "  sudo apt install python3-gi-cairo" >&2
+    exit 1
+fi
+
 app_dir="${HOME}/.local/lib/ubuntu-xp-screensaver"
 unit_dir="${HOME}/.config/systemd/user"
 mkdir -p "$app_dir" "$unit_dir"

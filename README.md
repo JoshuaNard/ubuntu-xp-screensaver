@@ -4,6 +4,14 @@ An animated Mystify-style screensaver for GNOME/Wayland. It starts after 15
 minutes without input, but only when the laptop is on AC power and its lid is
 open. Any key press, click, or mouse movement closes it.
 
+## Requirements
+
+Install GTK's Python Cairo adapter, which Ubuntu packages separately:
+
+```bash
+sudo apt install python3-gi-cairo
+```
+
 ## Install
 
 Run this from the project directory in a graphical terminal:

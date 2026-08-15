@@ -5,6 +5,7 @@ import math
 import random
 import signal
 import time
+from collections import deque
 
 import gi
 
@@ -13,7 +14,13 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, GLib, Gtk  # noqa: E402
 
 
-COLORS = ((0.15, 0.85, 1.0), (1.0, 0.15, 0.7), (0.4, 1.0, 0.2))
+COLORS = (
+    (0.10, 0.85, 1.0),
+    (1.0, 0.12, 0.65),
+    (0.35, 1.0, 0.15),
+    (1.0, 0.70, 0.05),
+    (0.65, 0.25, 1.0),
+)
 
 
 class Shape:
@@ -27,6 +34,16 @@ class Shape:
         self.angle = random.random() * math.tau
         self.spin = random.uniform(-0.018, 0.018)
         self.sides = sides
+        self.trail = deque(maxlen=18)
+
+    def vertices(self):
+        return [
+            (
+                self.x + math.cos(self.angle + i * math.tau / self.sides) * self.radius,
+                self.y + math.sin(self.angle + i * math.tau / self.sides) * self.radius,
+            )
+            for i in range(self.sides)
+        ]
 
     def update(self, width, height):
         self.x += self.dx
@@ -38,31 +55,33 @@ class Shape:
         if self.y - self.radius <= 0 or self.y + self.radius >= height:
             self.dy *= -1
             self.y = min(max(self.y, self.radius), height - self.radius)
+        self.trail.append(self.vertices())
 
     def draw(self, cr):
         r, g, b = self.color
-        cr.set_source_rgba(r, g, b, 0.9)
-        cr.set_line_width(2.4)
-        for i in range(self.sides + 1):
-            angle = self.angle + i * math.tau / self.sides
-            x = self.x + math.cos(angle) * self.radius
-            y = self.y + math.sin(angle) * self.radius
-            (cr.move_to if i == 0 else cr.line_to)(x, y)
-        cr.stroke()
+        frames = list(self.trail) or [self.vertices()]
+        for index, vertices in enumerate(frames, start=1):
+            strength = index / len(frames)
+            cr.set_source_rgba(r, g, b, 0.08 + 0.92 * strength * strength)
+            cr.set_line_width(1.0 + 3.0 * strength)
+            for point_index, (x, y) in enumerate(vertices + vertices[:1]):
+                (cr.move_to if point_index == 0 else cr.line_to)(x, y)
+            cr.stroke()
 
 
 class Screensaver(Gtk.Window):
-    def __init__(self):
+    def __init__(self, monitor_index):
         super().__init__(title="Mystify Screensaver")
         self.set_app_paintable(True)
-        self.fullscreen()
         self.set_keep_above(True)
         self.set_decorated(False)
+        self.fullscreen_on_monitor(Gdk.Screen.get_default(), monitor_index)
         self.area = Gtk.DrawingArea()
         self.add(self.area)
         self.shapes = []
         self.started = time.monotonic()
         self.area.connect("draw", self.draw)
+        self.connect("realize", self.hide_cursor)
         self.connect("key-press-event", lambda *_: Gtk.main_quit())
         self.connect("button-press-event", lambda *_: Gtk.main_quit())
         self.connect("motion-notify-event", self.on_motion)
@@ -73,9 +92,18 @@ class Screensaver(Gtk.Window):
         )
         GLib.timeout_add(16, self.tick)
 
+    def hide_cursor(self, *_):
+        cursor = Gdk.Cursor.new_for_display(
+            self.get_display(), Gdk.CursorType.BLANK_CURSOR
+        )
+        self.get_window().set_cursor(cursor)
+
     def ensure_shapes(self, width, height):
         if not self.shapes and width > 1 and height > 1:
-            self.shapes = [Shape(width, height, sides, color) for sides, color in zip((3, 4, 5), COLORS)]
+            self.shapes = [
+                Shape(width, height, sides, color)
+                for sides, color in zip((3, 4, 5, 6, 7), COLORS)
+            ]
 
     def draw(self, widget, cr):
         width, height = widget.get_allocated_width(), widget.get_allocated_height()
@@ -100,9 +128,13 @@ class Screensaver(Gtk.Window):
 
 def main():
     signal.signal(signal.SIGTERM, lambda *_: Gtk.main_quit())
-    window = Screensaver()
-    window.connect("destroy", Gtk.main_quit)
-    window.show_all()
+    display = Gdk.Display.get_default()
+    if display is None:
+        raise RuntimeError("No graphical display is available")
+    windows = [Screensaver(index) for index in range(display.get_n_monitors())]
+    for window in windows:
+        window.connect("destroy", Gtk.main_quit)
+        window.show_all()
     Gtk.main()
 
 
