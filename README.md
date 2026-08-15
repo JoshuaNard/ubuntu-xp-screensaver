@@ -19,7 +19,13 @@ This screensaver is visual only and does **not** lock the computer.
 To preview it immediately:
 
 ```bash
-./mystify.py
+make
+```
+
+The named target does the same thing:
+
+```bash
+make screensaver
 ```
 
 To inspect the background service:

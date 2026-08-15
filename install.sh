@@ -8,8 +8,10 @@ install -m 755 mystify.py monitor.py "$app_dir/"
 install -m 644 ubuntu-xp-screensaver.service "$unit_dir/"
 
 # GNOME's own idle blanking would cover the animation before it starts.
-previous_idle="$(gsettings get org.gnome.desktop.session idle-delay)"
-printf '%s\n' "$previous_idle" > "$app_dir/previous-idle-delay"
+if [[ ! -f "$app_dir/previous-idle-delay" ]]; then
+    previous_idle="$(gsettings get org.gnome.desktop.session idle-delay)"
+    printf '%s\n' "$previous_idle" > "$app_dir/previous-idle-delay"
+fi
 gsettings set org.gnome.desktop.session idle-delay 0
 
 systemctl --user daemon-reload
