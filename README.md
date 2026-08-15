@@ -1,7 +1,7 @@
-# Ubuntu XP-style screensaver
+# Ubuntu Beziers screensaver
 
-An animated Mystify-style screensaver for GNOME/Wayland. It starts after 15
-minutes without input, but only when the laptop is on AC power and its lid is
+A recreation of the classic Windows XP Beziers screensaver for GNOME/Wayland.
+It starts after 15 minutes without input, but only when the laptop is on AC power and its lid is
 open. Any key press, click, or mouse movement closes it.
 
 ## Requirements
@@ -14,10 +14,10 @@ sudo apt install python3-gi-cairo
 
 ## Install
 
-Run this from the project directory in a graphical terminal:
+Run this from the project directory in a terminal:
 
 ```bash
-chmod +x install.sh uninstall.sh mystify.py monitor.py
+chmod +x install.sh uninstall.sh beziers.py monitor.py
 ./install.sh
 ```
 

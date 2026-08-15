@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Launch Mystify after idle timeout, but only while charging with lid open."""
+"""Launch Beziers after idle timeout, but only while charging with lid open."""
 
 import os
 import signal
@@ -64,7 +64,7 @@ def main():
                 child.terminate()
                 child = None
             if allowed and idle_ms >= IDLE_MS and not child and not dismissed_during_current_idle:
-                child = subprocess.Popen([os.path.join(HERE, "mystify.py")])
+                child = subprocess.Popen([os.path.join(HERE, "beziers.py")])
         except GLib.Error as error:
             print(f"screensaver monitor: {error}", flush=True)
         time.sleep(2)

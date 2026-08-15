@@ -1,4 +1,4 @@
 .PHONY: screensaver
 
 screensaver:
-	./mystify.py
+	./beziers.py
