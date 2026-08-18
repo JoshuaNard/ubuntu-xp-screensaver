@@ -144,7 +144,7 @@ class BeziersWindow(Gtk.Window):
         period_text = now.strftime("%p")
         date_text = now.strftime("%A, %B %-d, %Y")
         left = 32
-        top = height - 82
+        top = height - 104
 
         end_x = BeziersWindow.draw_led_time(cr, time_text, left, top)
 
