@@ -1,7 +1,8 @@
 # Ubuntu Beziers screensaver
 
-A recreation of the classic Windows XP Beziers screensaver for GNOME/Wayland.
-It starts after 15 minutes without input, but only when the laptop is on AC power and its lid is
+A recreation of the classic Windows XP Beziers screensaver for GNOME/Wayland,
+with a matching red clock and date in the lower-left corner. It starts after 15
+minutes without input, but only when the laptop is on AC power and its lid is
 open. Any key press, click, or mouse movement closes it.
 
 ## Requirements

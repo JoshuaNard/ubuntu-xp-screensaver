@@ -6,6 +6,7 @@ import signal
 import sys
 import time
 from collections import deque
+from datetime import datetime
 
 import gi
 
@@ -111,7 +112,27 @@ class BeziersWindow(Gtk.Window):
         self.ensure_loop(width, height)
         if self.loop:
             self.loop.draw(cr)
+        self.draw_clock(cr, height)
         return False
+
+    @staticmethod
+    def draw_clock(cr, height):
+        now = datetime.now()
+        time_text = now.strftime("%I:%M %p").lstrip("0")
+        date_text = now.strftime("%A, %B %-d, %Y")
+        left = 32
+
+        cr.select_font_face("Sans", 0, 1)
+        cr.set_source_rgb(1.0, 0.0, 0.0)
+        cr.set_font_size(32)
+        cr.move_to(left, height - 54)
+        cr.show_text(time_text)
+
+        cr.select_font_face("Sans", 0, 0)
+        cr.set_source_rgb(0.82, 0.0, 0.0)
+        cr.set_font_size(17)
+        cr.move_to(left, height - 26)
+        cr.show_text(date_text)
 
     def tick(self, _widget, frame_clock):
         frame_time = frame_clock.get_frame_time()
