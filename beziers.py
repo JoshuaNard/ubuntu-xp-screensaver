@@ -22,6 +22,28 @@ from gi.repository import Gdk, Gtk  # noqa: E402
 BEZIER_SEGMENTS = 4
 TRAIL_LENGTH = 30
 
+DIGIT_SEGMENTS = {
+    "0": "abcdef",
+    "1": "bc",
+    "2": "abdeg",
+    "3": "abcdg",
+    "4": "bcfg",
+    "5": "acdfg",
+    "6": "acdefg",
+    "7": "abc",
+    "8": "abcdefg",
+    "9": "abcdfg",
+}
+SEGMENT_LINES = {
+    "a": (4, 0, 20, 0),
+    "b": (24, 4, 24, 18),
+    "c": (24, 24, 24, 38),
+    "d": (4, 42, 20, 42),
+    "e": (0, 24, 0, 38),
+    "f": (0, 4, 0, 18),
+    "g": (4, 21, 20, 21),
+}
+
 
 class MovingPoint:
     def __init__(self, width, height):
@@ -118,21 +140,49 @@ class BeziersWindow(Gtk.Window):
     @staticmethod
     def draw_clock(cr, height):
         now = datetime.now()
-        time_text = now.strftime("%I:%M %p").lstrip("0")
+        time_text = now.strftime("%I:%M").lstrip("0")
+        period_text = now.strftime("%p")
         date_text = now.strftime("%A, %B %-d, %Y")
         left = 32
+        top = height - 82
 
-        cr.select_font_face("Sans", 0, 1)
-        cr.set_source_rgb(1.0, 0.0, 0.0)
-        cr.set_font_size(32)
-        cr.move_to(left, height - 54)
-        cr.show_text(time_text)
+        end_x = BeziersWindow.draw_led_time(cr, time_text, left, top)
 
-        cr.select_font_face("Sans", 0, 0)
+        cr.select_font_face("Quicksand", 0, 1)
+        cr.set_source_rgb(0.82, 0.0, 0.0)
+        cr.set_font_size(12)
+        cr.move_to(end_x + 4, top + 42)
+        cr.show_text(period_text)
+
+        cr.select_font_face("Quicksand", 0, 0)
         cr.set_source_rgb(0.82, 0.0, 0.0)
         cr.set_font_size(17)
         cr.move_to(left, height - 26)
         cr.show_text(date_text)
+
+    @staticmethod
+    def draw_led_time(cr, text, left, top):
+        x = left
+        cr.set_line_cap(1)
+        for character in text:
+            if character == ":":
+                cr.set_source_rgb(1.0, 0.0, 0.0)
+                for dot_y in (14, 30):
+                    cr.arc(x + 5, top + dot_y, 3, 0, 6.2832)
+                    cr.fill()
+                x += 16
+                continue
+
+            active = DIGIT_SEGMENTS[character]
+            for segment, (x1, y1, x2, y2) in SEGMENT_LINES.items():
+                color = (1.0, 0.0, 0.0) if segment in active else (0.16, 0.0, 0.0)
+                cr.set_source_rgb(*color)
+                cr.set_line_width(5)
+                cr.move_to(x + x1, top + y1)
+                cr.line_to(x + x2, top + y2)
+                cr.stroke()
+            x += 34
+        return x
 
     def tick(self, _widget, frame_clock):
         frame_time = frame_clock.get_frame_time()
